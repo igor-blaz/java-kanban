@@ -19,7 +19,7 @@ public class Epic extends Task {
         this.subtaskIds = subtaskIds;
     }
 
-    public void addSubtasksForEpic(int id) {
+    public void addEpicSubtask(int id) {
         subtaskIds.add(id);
     }
 
