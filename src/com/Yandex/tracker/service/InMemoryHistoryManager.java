@@ -3,6 +3,7 @@ package com.Yandex.tracker.service;
 import com.Yandex.tracker.model.Epic;
 import com.Yandex.tracker.model.Subtask;
 import com.Yandex.tracker.model.Task;
+
 import java.util.Collections;
 import java.util.ArrayList;
 
@@ -18,22 +19,24 @@ public class InMemoryHistoryManager implements HistoryManager {
     private Node head;
     private Node tail;
     List<Task> historyArray = new ArrayList<>();
+
     @Override
     public List<Task> getHistory() {
         Collections.reverse(historyArray);
         return historyArray;
     }
-public Task makeCopy (Task task) {
+
+    public Task makeCopy(Task task) {
         Task clone = new Task(task.getName(), task.getDescription(), task.getStatus());
-    clone.setId(task.getId());
-    return clone;
-}
+        clone.setId(task.getId());
+        return clone;
+    }
 
     @Override
     public void add(Task task) {
         if (task != null) {
             Task clone = makeCopy(task);
-            if(history.containsKey(clone.getId())) {
+            if (history.containsKey(clone.getId())) {
                 remove(clone.getId());
                 historyArray.remove(task);
             }
@@ -72,10 +75,10 @@ public Task makeCopy (Task task) {
             Node prevNode = currentNode.prev;
             prevNode.next = null;
             tail = prevNode;
-        }else if (currentNode == head && currentNode==tail ){
+        } else if (currentNode == head && currentNode == tail) {
 
-            head=null;
-            tail=null;
+            head = null;
+            tail = null;
 
         } else {
             Node nextNode = currentNode.next;

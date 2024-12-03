@@ -1,7 +1,7 @@
 package com.Yandex.tracker.model;
 
 public enum TaskStatus {
-        NEW,
+    NEW,
     IN_PROGRESS,
     DONE
 }

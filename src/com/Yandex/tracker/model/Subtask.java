@@ -7,28 +7,35 @@ public class Subtask extends Task {
         super(name, description, status);
         this.epicId = epicId;
     }
+
     public void setEpicId(int epicId) {
         this.epicId = epicId;
     }
+
     public int getEpicId() {
         return epicId;
     }
+
     @Override
     public void setId(int id) {
         super.setId(id);
     }
+
     @Override
     public int getId() {
         return super.getId();
     }
+
     @Override
     public TaskStatus getStatus() {
         return super.getStatus();
     }
+
     @Override
     public void setStatus(TaskStatus status) {
         super.setStatus(status);
     }
+
     @Override
     public String toString() {
         return super.toString() + " | EpicId: " + epicId;
