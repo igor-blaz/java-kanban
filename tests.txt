@@ -1,0 +1,2 @@
+./java-6/test/com/Yandex/tracker/service/InMemoryHistoryManagerTest.java
+./java-6/test/com/Yandex/tracker/service/InMemoryTaskManagerTest.java
