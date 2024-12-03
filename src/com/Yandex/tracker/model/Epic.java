@@ -27,6 +27,6 @@ public class Epic extends Task {
         return super.getId();
     }
 
-//комментарий
+
 }
 

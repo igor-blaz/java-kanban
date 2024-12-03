@@ -7,7 +7,7 @@ import com.Yandex.tracker.model.TaskStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskManagerTest {
 
-     private TaskManager taskManager;
+    private TaskManager taskManager;
 
 
     @BeforeEach
@@ -31,19 +31,19 @@ class InMemoryTaskManagerTest {
     @Test
     void createTaskTest() {
 
-            Task task = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW);
-            final int taskId = taskManager.addNewTask(task);
+        Task task = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW);
+        final int taskId = taskManager.addNewTask(task);
 
-            final Task savedTask = taskManager.getTask(taskId);
+        final Task savedTask = taskManager.getTask(taskId);
 
-            assertNotNull(savedTask, "Задача не найдена.");
-            assertEquals(task, savedTask, "Задачи не совпадают.");
+        assertNotNull(savedTask, "Задача не найдена.");
+        assertEquals(task, savedTask, "Задачи не совпадают.");
 
-            final List<Task> tasks = taskManager.getTasks();
+        final List<Task> tasks = taskManager.getTasks();
 
-            assertNotNull(tasks, "Задачи не возвращаются.");
-            assertEquals(1, tasks.size(), "Неверное количество задач.");
-            assertEquals(task, tasks.get(0), "Задачи не совпадают.");
+        assertNotNull(tasks, "Задачи не возвращаются.");
+        assertEquals(1, tasks.size(), "Неверное количество задач.");
+        assertEquals(task, tasks.get(0), "Задачи не совпадают.");
 
     }
 
@@ -53,8 +53,8 @@ class InMemoryTaskManagerTest {
 
         Epic epic = new Epic("Test addNewEpic", "Test addNewEpic description", TaskStatus.NEW);
 
-        final int epicId=  taskManager.addNewEpic(epic);
-        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW,epicId);
+        final int epicId = taskManager.addNewEpic(epic);
+        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW, epicId);
         final int taskId = taskManager.addNewSubtask(subtask);
 
         final Task savedTask = taskManager.getSubtask(taskId);
@@ -74,10 +74,10 @@ class InMemoryTaskManagerTest {
 
 
         Epic epic = new Epic("Test addNewEpic", "Test addNewEpic description", TaskStatus.NEW);
-        final int epicId=  taskManager.addNewEpic(epic);
-        Subtask subtaskOne = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.DONE,epicId);
+        final int epicId = taskManager.addNewEpic(epic);
+        Subtask subtaskOne = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.DONE, epicId);
         final int taskIdOne = taskManager.addNewSubtask(subtaskOne);
-        Subtask subtaskTwo = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.DONE,epicId);
+        Subtask subtaskTwo = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.DONE, epicId);
         final int taskIdTwo = taskManager.addNewSubtask(subtaskTwo);
         taskManager.updateEpicStatus(epicId);
         assertNotNull(epic, "null вместо задачи");
@@ -120,8 +120,8 @@ class InMemoryTaskManagerTest {
 
         Epic epic = new Epic("Test addNewEpic", "Test addNewEpic description", TaskStatus.NEW);
 
-        final int epicId= taskManager.addNewEpic(epic);
-        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW,epicId);
+        final int epicId = taskManager.addNewEpic(epic);
+        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW, epicId);
         final int subtaskId = taskManager.addNewSubtask(subtask);
         taskManager.deleteSubtask(subtaskId);
         assertNull(taskManager.getSubtask(subtaskId), "Задача не удалена");
@@ -131,8 +131,8 @@ class InMemoryTaskManagerTest {
     void deleteAllSubtasksByEpicTest() {
         Epic epic = new Epic("Test addNewEpic", "Test addNewEpic description", TaskStatus.IN_PROGRESS);
 
-        final int epicId= taskManager.addNewEpic(epic);
-        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW,epicId);
+        final int epicId = taskManager.addNewEpic(epic);
+        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW, epicId);
         final int subtaskId = taskManager.addNewSubtask(subtask);
         taskManager.deleteSubtasks();
         assertNull(taskManager.getSubtask(subtaskId), "Задача не удалена");
@@ -142,8 +142,8 @@ class InMemoryTaskManagerTest {
     void deleteAllEpicsTest() {
         Epic epic = new Epic("Test addNewEpic", "Test addNewEpic description", TaskStatus.IN_PROGRESS);
 
-        final int epicId= taskManager.addNewEpic(epic);
-        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW,epicId);
+        final int epicId = taskManager.addNewEpic(epic);
+        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW, epicId);
         final int subtaskId = taskManager.addNewSubtask(subtask);
         taskManager.deleteEpics();
         assertNull(taskManager.getEpic(subtaskId), "Задача не удалена");
@@ -162,9 +162,9 @@ class InMemoryTaskManagerTest {
         List<Task> history = historyManager.getHistory();
         Task oldTask = history.get(0);
 
-        assertNotEquals(task.getName(),oldTask.getName(),"Изменения затронули history" );
-        assertNotEquals(task.getId(),oldTask.getId(), "Изменения затронули history" );
-        assertNotEquals(task.getStatus(),oldTask.getStatus(),"Изменения затронули history" );
+        assertNotEquals(task.getName(), oldTask.getName(), "Изменения затронули history");
+        assertNotEquals(task.getId(), oldTask.getId(), "Изменения затронули history");
+        assertNotEquals(task.getStatus(), oldTask.getStatus(), "Изменения затронули history");
     }
 
 }

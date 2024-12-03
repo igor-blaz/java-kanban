@@ -1,13 +1,11 @@
 package com.Yandex.tracker.service;
 
-import com.Yandex.tracker.model.Epic;
-import com.Yandex.tracker.model.Subtask;
+
 import com.Yandex.tracker.model.Task;
 
 import java.util.Collections;
 import java.util.ArrayList;
 
-import com.Yandex.tracker.model.Subtask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,10 +65,10 @@ public class InMemoryHistoryManager implements HistoryManager {
             return;
         }
         if (currentNode == head && currentNode != tail) {
-            Node nextNode = currentNode.next;   //определили следующий элемент
-            nextNode.prev = null;                // удалили у него начало тк это HEAD
+            Node nextNode = currentNode.next;
+            nextNode.prev = null;
             head = nextNode;
-            //записали в поле новое значение
+
         } else if (currentNode == tail && currentNode != head) {
             Node prevNode = currentNode.prev;
             prevNode.next = null;

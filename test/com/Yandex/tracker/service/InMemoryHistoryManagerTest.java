@@ -1,6 +1,6 @@
 package com.Yandex.tracker.service;
 
-import com.Yandex.tracker.model.Epic;
+
 import com.Yandex.tracker.model.Task;
 import com.Yandex.tracker.model.TaskStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,10 +57,10 @@ class InMemoryHistoryManagerTest {
         List<Task> history = historyManager.getHistory();
 
 
-       
         assertTrue(history.contains(taskCopy), "Новая версия должна быть добавлена");
-        assertTrue(history.size()==1, "Не должно быть повторений");
+        assertTrue(history.size() == 1, "Не должно быть повторений");
     }
+
     @Test
     void historyShouldReturnOnlyNewViewsInCorrectOrder() {
         TaskManager taskManager = Managers.getDefault();
@@ -82,16 +82,17 @@ class InMemoryHistoryManagerTest {
         assertEquals(taskThree, history.get(1), "Третья задача должна быть второй");
         assertEquals(taskTwo, history.get(2), "Вторая задача должна быть в конце");
     }
+
     @Test
     void taskShouldBeDeletedByInformationFromHistory() {
         TaskManager taskManager = Managers.getDefault();
         historyManager.add(taskOne);
-        List <Task> historyArray =new ArrayList<>(historyManager.getHistory());
+        List<Task> historyArray = new ArrayList<>(historyManager.getHistory());
         Task task = historyArray.get(0);
         taskManager.deleteTask(task.getId());
         List<Task> history = taskManager.getHistory();
         assertTrue(history.isEmpty(), "Задача долэна быть удалена");
     }
-    }
+}
 
 
