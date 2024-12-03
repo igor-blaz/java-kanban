@@ -4,13 +4,16 @@ import com.Yandex.tracker.model.Epic;
 import com.Yandex.tracker.model.Subtask;
 import com.Yandex.tracker.model.Task;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 public interface TaskManager {
     List<Task> getHistory();
+
     List<Subtask> getSubtasks();
+
     List<Task> getTasks();
+
     List<Epic> getEpics();
 
     List<Subtask> getEpicSubtasks(int epicId);
@@ -45,5 +48,5 @@ public interface TaskManager {
 
     void deleteEpics();
 
-    void updateEpicStatus(int EpicId);
+    void updateEpicStatus(int epicId);
 }

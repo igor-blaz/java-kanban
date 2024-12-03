@@ -153,14 +153,14 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.clear();
     }
     @Override
-    public void updateEpicStatus(int EpicId) {
+    public void updateEpicStatus(int epicId) {
 
-        Epic epic = epics.get(EpicId);
+        Epic epic = epics.get(epicId);
         if (epic == null) {
 
             return;
         }
-        ArrayList<Subtask> SubtasksForEpic = getEpicSubtasks(EpicId);
+        ArrayList<Subtask> SubtasksForEpic = getEpicSubtasks(epicId);
         if (SubtasksForEpic.isEmpty()) {
             epic.setStatus(TaskStatus.NEW);
             return;
