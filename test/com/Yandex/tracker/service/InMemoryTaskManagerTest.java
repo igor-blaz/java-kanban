@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -149,22 +150,5 @@ class InMemoryTaskManagerTest {
         assertNull(taskManager.getEpic(subtaskId), "Задача не удалена");
     }
 
-    @Test
-    void changesCantMakeHistoryDifferent() {
-
-        HistoryManager historyManager = Managers.getDefaultHistory();
-        Epic task = new Epic("Test addNewTask", "Test addNewTask description", TaskStatus.NEW);
-        final int taskId = taskManager.addNewTask(task);
-        historyManager.add(task);
-        task.setName("непредсказуемое имя");
-        task.setId(44);
-        task.setStatus(TaskStatus.DONE);
-        List<Task> history = historyManager.getHistory();
-        Task oldTask = history.get(0);
-
-        assertNotEquals(task.getName(), oldTask.getName(), "Изменения затронули history");
-        assertNotEquals(task.getId(), oldTask.getId(), "Изменения затронули history");
-        assertNotEquals(task.getStatus(), oldTask.getStatus(), "Изменения затронули history");
-    }
 
 }

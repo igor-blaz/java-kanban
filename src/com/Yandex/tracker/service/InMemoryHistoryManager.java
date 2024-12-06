@@ -3,42 +3,38 @@ package com.Yandex.tracker.service;
 
 import com.Yandex.tracker.model.Task;
 
-import java.util.Collections;
-import java.util.ArrayList;
-
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
     private final Map<Integer, Node<Task>> history = new HashMap<>();
     private Node head;
     private Node tail;
-    List<Task> historyArray = new ArrayList<>();
+
 
     @Override
     public List<Task> getHistory() {
-        Collections.reverse(historyArray);
-        return historyArray;
+        return getTasks();
     }
 
-    public Task makeCopy(Task task) {
-        Task clone = new Task(task.getName(), task.getDescription(), task.getStatus());
-        clone.setId(task.getId());
-        return clone;
+    public List<Task> getTasks() {
+        List<Task> tasks = new ArrayList<>();
+        Node<Task> current = head;
+        while (current != null) {
+            tasks.add(current.data);
+            current = current.next;
+        }
+        return tasks;
     }
 
     @Override
     public void add(Task task) {
         if (task != null) {
-            Task clone = makeCopy(task);
-            if (history.containsKey(clone.getId())) {
-                remove(clone.getId());
-                historyArray.remove(task);
+            if (history.containsKey(task.getId())) {
+                Node currentNode = history.get(task.getId());
+                removeNode(currentNode);
             }
-            Node newNode = new Node(clone);
+            Node newNode = new Node(task);
             if (head == null) {
                 head = newNode;
                 tail = newNode;
@@ -47,14 +43,13 @@ public class InMemoryHistoryManager implements HistoryManager {
                 newNode.prev = tail;
                 tail = newNode;
             }
-            history.put(clone.getId(), newNode);
-            historyArray.add(clone);
+            history.put(task.getId(), newNode);
         }
     }
 
     @Override
     public void remove(int id) {
-        Node currentNode = history.get(id);
+        Node currentNode = history.remove(id);
         removeNode(currentNode);
 
 
@@ -87,5 +82,6 @@ public class InMemoryHistoryManager implements HistoryManager {
 
 
     }
+
 
 }

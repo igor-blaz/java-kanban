@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,6 +78,7 @@ class InMemoryHistoryManagerTest {
         taskManager.getTask(1);
 
         List<Task> history = taskManager.getHistory();
+        Collections.reverse(history);
         assertEquals(3, history.size(), "История должна содержать три задачи");
         assertEquals(taskFirst, history.get(0), "Первая задача должна быть в начале");
         assertEquals(taskThree, history.get(1), "Третья задача должна быть второй");
