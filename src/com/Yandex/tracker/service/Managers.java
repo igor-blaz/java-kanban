@@ -5,7 +5,7 @@ public class Managers {
 
 
     public static TaskManager getDefault() {
-        return new InMemoryTaskManager();  // Возвращаем реальную реализацию InMemoryTaskManager
+        return new InMemoryTaskManager();
     }
 
     public static HistoryManager getDefaultHistory() {
