@@ -219,4 +219,7 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     }
+    public List<HashMap<Integer, ? extends Task>> getAllMaps(){
+        return List.of(tasks, subtasks, epics);
+    }
 }
