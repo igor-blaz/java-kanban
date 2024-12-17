@@ -93,7 +93,7 @@ class InMemoryHistoryManagerTest {
         Task task = historyArray.get(0);
         taskManager.deleteTask(task.getId());
         List<Task> history = taskManager.getHistory();
-        assertTrue(history.isEmpty(), "Задача долэна быть удалена");
+        assertTrue(history.isEmpty(), "Задача должна быть удалена");
     }
 }
 

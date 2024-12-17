@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    private File file;
+    final private File file;
     final static int ID_POSITION = 0;
     final static int TYPE_POSITION = 1;
     final static int NAME_POSITION = 2;
@@ -19,24 +19,60 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.file = file;
     }
 
+    static FileBackedTaskManager loadFromFile(File file) {
+        FileBackedTaskManager manager = new FileBackedTaskManager(file);
+        List<String> lineTask = new ArrayList<>();
+        String line;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+
+            while ((line = reader.readLine()) != null) {
+                lineTask.add(line);
+            }
+            lineTask.remove(0);
+            for (String str : lineTask) {
+                Task task = manager.fromString(str);
+                if (task.getClass() == Task.class) {
+                    manager.addNewTask(task);
+                } else if (task.getClass() == Subtask.class) {
+                    Subtask subtask = (Subtask) task;
+                    manager.addNewSubtask(subtask);
+                } else if (task.getClass() == Epic.class) {
+                    Epic epic = (Epic) task;
+                    manager.addNewEpic(epic);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Ошибка при чтении файла.");
+        }
+        return manager;
+
+    }
+
+
     public void save() {
 
 
         try (FileWriter writer = new FileWriter(file)) {
 
-            for (Task task : super.getTasks()) {
-                writer.write(toString(task));
-                writer.write("\n");
+            writer.write("id,type,name,status,description,epic\n");
+            if (super.getTasks() != null) {
+                for (Task task : super.getTasks()) {
+                    writer.write(toString(task));
+                    writer.write("\n");
+                }
             }
-            for (Subtask subtask : super.getSubtasks()) {
-                writer.write(toString(subtask));
-                writer.write("\n");
+            if (super.getSubtasks() != null) {
+                for (Subtask subtask : super.getSubtasks()) {
+                    writer.write(toString(subtask));
+                    writer.write("\n");
+                }
             }
-            for (Epic epic : super.getEpics()) {
-                writer.write(toString(epic));
-                writer.write("\n");
+            if (super.getEpics() != null) {
+                for (Epic epic : super.getEpics()) {
+                    writer.write(toString(epic));
+                    writer.write("\n");
+                }
             }
-
         } catch (IOException e) {
             throw new ManagerSaveException("Произошла ошибка во время записи в файл.");
 
@@ -45,11 +81,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     String toString(Task task) {
 
-        List<String> taskInfo = new ArrayList<>();
+        List<String> taskInfo = new ArrayList<>(5);
         TaskType taskType;
 
 
         taskInfo.add(ID_POSITION, String.valueOf(task.getId()));
+        taskInfo.add(TYPE_POSITION, null);
         taskInfo.add(NAME_POSITION, String.valueOf(task.getName()));
         taskInfo.add(STATUS_POSITION, String.valueOf(task.getStatus()));
         taskInfo.add(DESCRIPTION_POSITION, String.valueOf(task.getDescription()));
@@ -57,24 +94,30 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         if (task.getClass() == Subtask.class) {
             taskType = TaskType.SUBTASK;
-            taskInfo.add(TYPE_POSITION, String.valueOf(taskType));
+            taskInfo.set(TYPE_POSITION, String.valueOf(taskType));
             taskInfo.add(EPIC_ID_POSITION, String.valueOf(((Subtask) task).getEpicId()));
 
         } else if (task.getClass() == Task.class) {
             taskType = TaskType.TASK;
-            taskInfo.add(TYPE_POSITION, String.valueOf(taskType));
+            taskInfo.set(TYPE_POSITION, String.valueOf(taskType));
         } else if (task.getClass() == Epic.class) {
             taskType = TaskType.EPIC;
-            taskInfo.add(TYPE_POSITION, String.valueOf(taskType));
-
+            taskInfo.set(TYPE_POSITION, String.valueOf(taskType));
+        } else if (taskInfo.get(TYPE_POSITION) == null) {
+            System.out.println("Невозможно определить тип задачи.");
+            return null;
+        } else {
+            System.out.println("Невозможно создать строку");
+            return null;
         }
 
-        return taskInfo.toString();
+        return taskInfo.toString().replace(" ", "").
+                replace("]", "").replace("[", "");
     }
 
     Task fromString(String value) {
 
-        StringBuilder sb = new StringBuilder();
+
         String[] rawTask = value.split(",");
         String unsureId = rawTask[ID_POSITION];
         String type = rawTask[TYPE_POSITION];
@@ -116,8 +159,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             status = TaskStatus.NEW;
         } else if (value.equals("DONE")) {
             status = TaskStatus.DONE;
-        } else {
+        } else if (value.equals("IN_PROGRESS")) {
             status = TaskStatus.IN_PROGRESS;
+        } else {
+            System.out.println("Невозможно определить статус задачи " + value);
+            return null;
         }
 
 
@@ -198,6 +244,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public void updateEpic(Epic epic) {
         super.updateEpic(epic);
         save();
+    }
+
+    public File getFile() {
+        return file;
     }
 
 
