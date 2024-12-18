@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    final private File file;
+    private final File file;
     private static final int ID_POSITION = 0;
     private static final int TYPE_POSITION = 1;
     private static final int NAME_POSITION = 2;
