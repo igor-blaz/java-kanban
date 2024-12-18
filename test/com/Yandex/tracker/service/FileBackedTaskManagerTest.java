@@ -40,7 +40,7 @@ public class FileBackedTaskManagerTest {
         String staskTwoString = fileBacked.toString(taskTwo);
         String staskThreeString = fileBacked.toString(taskThree);
         assertEquals(staskOneString,"17,TASK,имя,NEW,описание");
-        assertEquals(staskTwoString,"19,EPIC,имя2,NEW,описание2");
+        assertEquals(staskTwoString,"99,EPIC,имя2,NEW,описание2");
         assertEquals(staskThreeString,"4,SUBTASK,имя2,NEW,описание2,99");
     }
 
