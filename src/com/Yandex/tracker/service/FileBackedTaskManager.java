@@ -31,6 +31,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             lineTask.remove(0);
             for (String str : lineTask) {
                 Task task = manager.fromString(str);
+                if (task == null) {
+                    System.out.println("Некорректная строка: " + str);
+                    continue;
+                }
                 if (task.getClass() == Task.class) {
                     manager.addNewTask(task);
                 } else if (task.getClass() == Subtask.class) {
@@ -39,6 +43,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 } else if (task.getClass() == Epic.class) {
                     Epic epic = (Epic) task;
                     manager.addNewEpic(epic);
+                } else {
+                    System.out.println("Задача не обнаружена ");
                 }
             }
         } catch (IOException e) {
@@ -133,7 +139,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 Task task = new Task(name, description, status);
                 task.setId(id);
                 return task;
-            } else if (type.equals("SUBTASK") && rawTask.length == 5) {
+            } else if (type.equals("SUBTASK")) {
                 if (isInteger(rawTask[EPIC_ID_POSITION])) {
                     int epicId = Integer.parseInt(rawTask[EPIC_ID_POSITION]);
                     Subtask subtask = new Subtask(name, description, status, epicId);
@@ -191,23 +197,23 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     @Override
     public int addNewSubtask(Subtask subtask) {
-        int id = super.addNewSubtask(subtask);
+        super.addNewSubtask(subtask);
         save();
-        return id;
+        return subtask.getId();
     }
 
     @Override
     public int addNewTask(Task task) {
-        int id = super.addNewTask(task);
+        super.addNewTask(task);
         save();
-        return id;
+        return task.getId();
     }
 
     @Override
     public int addNewEpic(Epic epic) {
-        int id = super.addNewEpic(epic);
+        super.addNewEpic(epic);
         save();
-        return id;
+        return epic.getId();
     }
 
     @Override

@@ -82,19 +82,25 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewEpic(Epic epic) {
-        epic.setId(id++);
+        if (epic.getId() == 0) {
+            epic.setId(id++);
+        }
         epics.put(id, epic);
         return id;
     }
 
     @Override
     public int addNewSubtask(Subtask subtask) {
-        final int epicId = subtask.getEpicId();
-        Epic epic = epics.get(epicId);
-        final int id = ++this.id;
-        subtask.setId(id);
+        int epicId = subtask.getEpicId();
+        if (epics.get(epicId) != null) {
+            Epic epic = epics.get(epicId);
+            epic.addEpicSubtask(subtask.getId());
+        }
+        if (subtask.getId() == 0) {
+            subtask.setId(id++);
+
+        }
         subtasks.put(id, subtask);
-        epic.addEpicSubtask(subtask.getId());
         updateEpicStatus(epicId);
         return id;
     }
@@ -219,7 +225,8 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     }
-    public List<HashMap<Integer, ? extends Task>> getAllMaps(){
+
+    public List<HashMap<Integer, ? extends Task>> getAllMaps() {
         return List.of(tasks, subtasks, epics);
     }
 }

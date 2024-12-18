@@ -14,10 +14,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FileBackedTaskManagerTest {
     private File file;
-    private TaskManager taskManager;
     private Task taskOne;
-    private Task taskTwo;
-    private Task taskThree;
+    private Epic taskTwo;
+    private Subtask taskThree;
     private FileBackedTaskManager fileBacked;
     private String stringedTask;
 
@@ -25,13 +24,14 @@ public class FileBackedTaskManagerTest {
     void setUp() {
 
         fileBacked = new FileBackedTaskManager(file);
-        taskManager = Managers.getDefault();
+
         taskOne = new Task("имя", "описание", TaskStatus.NEW);
         taskOne.setId(17);
+        taskTwo = new Epic("имя2", "описание2", TaskStatus.NEW);
+        taskTwo.setId(99);
         taskThree = new Subtask("имя2", "описание2", TaskStatus.NEW, 99);
         taskThree.setId(4);
-        taskTwo = new Epic("имя2", "описание2", TaskStatus.NEW);
-        taskTwo.setId(19);
+
     }
 
     @Test
@@ -39,9 +39,9 @@ public class FileBackedTaskManagerTest {
         String staskOneString = fileBacked.toString(taskOne);
         String staskTwoString = fileBacked.toString(taskTwo);
         String staskThreeString = fileBacked.toString(taskThree);
-        assertTrue(staskOneString.equals("17,TASK,имя,NEW,описание"));
-        assertTrue(staskTwoString.equals("19,EPIC,имя2,NEW,описание2"));
-        assertTrue(staskThreeString.equals("4,SUBTASK,имя2,NEW,описание2,99"));
+        assertEquals(staskOneString,"17,TASK,имя,NEW,описание");
+        assertEquals(staskTwoString,"19,EPIC,имя2,NEW,описание2");
+        assertEquals(staskThreeString,"4,SUBTASK,имя2,NEW,описание2,99");
     }
 
     @Test
@@ -80,7 +80,7 @@ public class FileBackedTaskManagerTest {
     void saveTest() {
         String fromFile;
         try {
-            File tempFile = File.createTempFile("temp", ".txt");
+            File tempFile = File.createTempFile("temp", ".csv");
             FileBackedTaskManager newFileBacked = new FileBackedTaskManager(tempFile);
             newFileBacked.addNewTask(taskOne);
             newFileBacked.save();
@@ -100,15 +100,29 @@ public class FileBackedTaskManagerTest {
             }
             fromFile = sb.toString();
             //System.out.println(fromFile);
-            //System.out.println(expectedString);
+            //System.out.println(expectedString);`
 
             assertEquals(fromFile.replace("\n", ""),
                     expectedString.replace("\n", ""));
         } catch (IOException e) {
             System.out.println("Не удалось создать временный файл  " + e.getMessage());
         }
-
-
     }
 
+    @Test
+    void testLoadFromFile() throws IOException {
+
+        File tempFile = File.createTempFile("temp", ".txt");
+        FileBackedTaskManager newFileBacked = new FileBackedTaskManager(tempFile);
+        newFileBacked.addNewTask(taskOne);
+        newFileBacked.addNewSubtask(taskThree);
+        newFileBacked.addNewEpic(taskTwo);
+        newFileBacked.save();
+        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(tempFile);
+        assertEquals(1, manager.getTasks().size(), "Должна быть только одна задача");
+        assertEquals(1, manager.getEpics().size(), "Должен быть только один эпик");
+        assertEquals(1, manager.getSubtasks().size(), "Должна быть только одна подзадача");
+    }
 }
+
+
