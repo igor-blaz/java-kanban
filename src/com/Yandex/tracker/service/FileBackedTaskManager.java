@@ -8,12 +8,12 @@ import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     final private File file;
-    final static int ID_POSITION = 0;
-    final static int TYPE_POSITION = 1;
-    final static int NAME_POSITION = 2;
-    final static int STATUS_POSITION = 3;
-    final static int DESCRIPTION_POSITION = 4;
-    final static int EPIC_ID_POSITION = 5;
+    private static final int ID_POSITION = 0;
+    private static final int TYPE_POSITION = 1;
+    private static final int NAME_POSITION = 2;
+    private static final int STATUS_POSITION = 3;
+    private static final int DESCRIPTION_POSITION = 4;
+    private static final int EPIC_ID_POSITION = 5;
 
     public FileBackedTaskManager(File file) {
         this.file = file;
@@ -117,8 +117,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             return null;
         }
 
-        return taskInfo.toString().replace(" ", "").
-                replace("]", "").replace("[", "");
+        return taskInfo.toString()
+                .replace(" ", "")
+                .replace("]", "")
+                .replace("[", "");
     }
 
     Task fromString(String value) {
