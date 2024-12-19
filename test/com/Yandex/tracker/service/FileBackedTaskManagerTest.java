@@ -18,7 +18,6 @@ public class FileBackedTaskManagerTest {
     private Epic taskTwo;
     private Subtask taskThree;
     private FileBackedTaskManager fileBacked;
-    private String stringedTask;
 
     @BeforeEach
     void setUp() {
@@ -29,7 +28,7 @@ public class FileBackedTaskManagerTest {
         taskOne.setId(17);
         taskTwo = new Epic("имя2", "описание2", TaskStatus.NEW);
         taskTwo.setId(99);
-        taskThree = new Subtask("имя2", "описание2", TaskStatus.NEW, 99);
+        taskThree = new Subtask("имя2", "описание2", TaskStatus.NEW, taskTwo.getId());
         taskThree.setId(4);
 
     }
@@ -39,9 +38,9 @@ public class FileBackedTaskManagerTest {
         String staskOneString = fileBacked.toString(taskOne);
         String staskTwoString = fileBacked.toString(taskTwo);
         String staskThreeString = fileBacked.toString(taskThree);
-        assertEquals(staskOneString,"17,TASK,имя,NEW,описание");
-        assertEquals(staskTwoString,"99,EPIC,имя2,NEW,описание2");
-        assertEquals(staskThreeString,"4,SUBTASK,имя2,NEW,описание2,99");
+        assertEquals(staskOneString, "17,TASK,имя,NEW,описание");
+        assertEquals(staskTwoString, "99,EPIC,имя2,NEW,описание2");
+        assertEquals(staskThreeString, "4,SUBTASK,имя2,NEW,описание2,99");
     }
 
     @Test
@@ -54,7 +53,7 @@ public class FileBackedTaskManagerTest {
 
     @Test
     void fromStringTest() {
-        stringedTask = ("100,EPIC,купить_хлеб,IN_PROGRESS,Сходить_в_Ленту");
+        String stringedTask = ("100,EPIC,купить_хлеб,IN_PROGRESS,Сходить_в_Ленту");
         Task task = fileBacked.fromString(stringedTask);
         assertEquals(task.getId(), 100);
         assertEquals(task.getName(), ("купить_хлеб"));
@@ -114,14 +113,15 @@ public class FileBackedTaskManagerTest {
 
         File tempFile = File.createTempFile("temp", ".txt");
         FileBackedTaskManager newFileBacked = new FileBackedTaskManager(tempFile);
+
         newFileBacked.addNewTask(taskOne);
-        newFileBacked.addNewSubtask(taskThree);
         newFileBacked.addNewEpic(taskTwo);
-        newFileBacked.save();
+        newFileBacked.addNewSubtask(taskThree);
         FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(tempFile);
         assertEquals(1, manager.getTasks().size(), "Должна быть только одна задача");
         assertEquals(1, manager.getEpics().size(), "Должен быть только один эпик");
         assertEquals(1, manager.getSubtasks().size(), "Должна быть только одна подзадача");
+
     }
 }
 
