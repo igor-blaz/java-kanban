@@ -190,8 +190,8 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.clear();
     }
 
-    @Override
-    public void updateEpicStatus(int epicId) {
+
+    protected void updateEpicStatus(int epicId) {
 
         Epic epic = epics.get(epicId);
         if (epic == null) {

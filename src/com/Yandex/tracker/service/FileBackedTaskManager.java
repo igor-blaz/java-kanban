@@ -19,7 +19,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.file = file;
     }
 
-    static FileBackedTaskManager loadFromFile(File file) {
+    protected static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
         List<String> lineTask = new ArrayList<>();
         String line;
@@ -55,7 +55,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
 
-    public void save() {
+    protected void save() {
 
 
         try (FileWriter writer = new FileWriter(file)) {
@@ -85,7 +85,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    String toString(Task task) {
+    protected String toString(Task task) {
 
         List<String> taskInfo = new ArrayList<>(5);
         TaskType taskType;
@@ -123,7 +123,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 .replace("[", "");
     }
 
-    Task fromString(String value) {
+    protected Task fromString(String value) {
 
 
         String[] rawTask = value.split(",");
@@ -160,7 +160,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return null;
     }
 
-    public TaskStatus statusConverter(String value) {
+    private TaskStatus statusConverter(String value) {
         TaskStatus status;
 
         if (value.equals("NEW")) {
@@ -178,15 +178,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return status;
     }
 
-    public boolean isCorrectStatus(String value) {
+    private boolean isCorrectStatus(String value) {
         return (value.equals("NEW") || value.equals("DONE") || value.equals("IN_PROGRESS"));
     }
 
-    public boolean isCorrectType(String value) {
+    private boolean isCorrectType(String value) {
         return (value.equals("TASK") || value.equals("SUBTASK") || value.equals("EPIC"));
     }
 
-    public boolean isInteger(String value) {
+    private boolean isInteger(String value) {
         try {
             Integer.parseInt(value);
             return true;
@@ -254,14 +254,27 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
-    public File getFile() {
-        return file;
+    @Override
+    public void deleteTasks() {
+        super.deleteTasks();
+        save();
     }
 
     @Override
-    public void updateEpicStatus(int epicId) {
-        super.updateEpicStatus(epicId);
+    public void deleteEpics() {
+        super.deleteEpics();
         save();
     }
+
+    @Override
+    public void deleteSubtasks() {
+        super.deleteSubtasks();
+        save();
+    }
+
+    protected File getFile() {
+        return file;
+    }
+
 
 }

@@ -80,7 +80,8 @@ class InMemoryTaskManagerTest {
         final int taskIdOne = taskManager.addNewSubtask(subtaskOne);
         Subtask subtaskTwo = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.DONE, epicId);
         final int taskIdTwo = taskManager.addNewSubtask(subtaskTwo);
-        taskManager.updateEpicStatus(epicId);
+        InMemoryTaskManager newManager = new InMemoryTaskManager();
+        newManager.updateEpicStatus(epicId);
         assertNotNull(epic, "null вместо задачи");
         assertEquals(TaskStatus.DONE, epic.getStatus(), "Статус не обновился.");
     }
@@ -149,7 +150,6 @@ class InMemoryTaskManagerTest {
         taskManager.deleteEpics();
         assertNull(taskManager.getEpic(subtaskId), "Задача не удалена");
     }
-
 
 
 }
