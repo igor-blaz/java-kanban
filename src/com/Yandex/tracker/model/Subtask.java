@@ -7,9 +7,11 @@ public class Subtask extends Task {
         super(name, description, status);
         this.epicId = epicId;
     }
+
     public int getEpicId() {
         return epicId;
     }
+
     @Override
     public String toString() {
         return super.toString() + " | EpicId: " + epicId;
