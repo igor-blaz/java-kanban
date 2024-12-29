@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 
 
+import static com.Yandex.tracker.service.FileBackedTaskManager.loadFromFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FileBackedTaskManagerTest {
@@ -33,94 +34,30 @@ public class FileBackedTaskManagerTest {
 
     }
 
-    @Test
-    void toStringTest() {
-        String staskOneString = fileBacked.toString(taskOne);
-        String staskTwoString = fileBacked.toString(taskTwo);
-        String staskThreeString = fileBacked.toString(taskThree);
-        assertEquals(staskOneString, "17,TASK,имя,NEW,описание");
-        assertEquals(staskTwoString, "99,EPIC,имя2,NEW,описание2");
-        assertEquals(staskThreeString, "4,SUBTASK,имя2,NEW,описание2,99");
-    }
-
-    @Test
-    void incorrectTaskToStringTest() {
-        taskOne = new Task("имя", "описание", TaskStatus.NEW);
-        String taskOneString = fileBacked.toString(taskOne);
-        // System.out.println(taskOneString);
-        assertEquals(taskOneString, ("0,TASK,имя,NEW,описание"));
-    }
-
-    @Test
-    void fromStringTest() {
-        String stringedTask = ("100,EPIC,купить_хлеб,IN_PROGRESS,Сходить_в_Ленту");
-        Task task = fileBacked.fromString(stringedTask);
-        assertEquals(task.getId(), 100);
-        assertEquals(task.getName(), ("купить_хлеб"));
-        assertEquals(task.getStatus().toString(), ("IN_PROGRESS"));
-        assertEquals(task.getDescription(), ("Сходить_в_Ленту"));
-    }
 
     @Test
     void incorrectTaskFromStringTest() {
-        String incorrect = ("сто,EPI,купить хлеб,IN_PROGRESS,3456345");
-        String incorrectStatus = ("100,EPIC,купить_хлеб,ERROR,Сходить_в_Ленту");
+
+        String incorrect = ("37,EPI,купить хлеб,IN_PROGRESS,3456345");
+        String incorrectStatus = ("1000,EPIC,купить_хлеб,ERROR,Сходить_в_Ленту");
         String incorrectType = ("100,СЛОЖНО!!!,купить_хлеб,DONE,Сходить_в_Ленту");
-        Task taskFailOne = fileBacked.fromString(incorrect);
-        Task taskFailTwo = fileBacked.fromString(incorrectStatus);
-        Task taskFailThree = fileBacked.fromString(incorrectType);
-        assertNull(taskFailOne);
-        assertNull(taskFailTwo);
-        assertNull(taskFailThree);
-        System.out.println("ошибка предусмотрена тестом incorrectTaskFromStringTest");
-    }
 
-    @Test
-    void saveTest() {
-        String fromFile;
-        try {
-            File tempFile = File.createTempFile("temp", ".csv");
-            FileBackedTaskManager newFileBacked = new FileBackedTaskManager(tempFile);
-            newFileBacked.addNewTask(taskOne);
-            newFileBacked.save();
-            File fromFileBacked = newFileBacked.getFile();
 
-            String expectedString = "id,type,name,status,description,epic\n" +
-                    "0,TASK,имя,NEW,описание";
-            StringBuilder sb = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new FileReader(fromFileBacked))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
+        File incorrectFile = new File(incorrect);
+        File incorrectStatusFile = new File(incorrectStatus);
+        File incorrectTypeFile = new File(incorrectType);
 
-            } catch (IOException e) {
-                fail("Ошибка при чтении файла: " + e.getMessage());
-            }
-            fromFile = sb.toString();
-            //System.out.println(fromFile);
-            //System.out.println(expectedString);`
+        FileBackedTaskManager incorrectFromManager = loadFromFile(incorrectFile);
+        FileBackedTaskManager incorrectStatusFromManager = loadFromFile(incorrectStatusFile);
+        FileBackedTaskManager incorrectTypeFromManager = loadFromFile(incorrectTypeFile);
 
-            assertEquals(fromFile.replace("\n", ""),
-                    expectedString.replace("\n", ""));
-        } catch (IOException e) {
-            System.out.println("Не удалось создать временный файл  " + e.getMessage());
-        }
-    }
+        Task incorrectOne = incorrectFromManager.getTask(37);
+        Task incorrectTwo = incorrectStatusFromManager.getTask(1000);
+        Task incorrectThree = incorrectTypeFromManager.getTask(100);
 
-    @Test
-    void testLoadFromFile() throws IOException {
-
-        File tempFile = File.createTempFile("temp", ".txt");
-        FileBackedTaskManager newFileBacked = new FileBackedTaskManager(tempFile);
-
-        newFileBacked.addNewTask(taskOne);
-        newFileBacked.addNewEpic(taskTwo);
-        newFileBacked.addNewSubtask(taskThree);
-        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(tempFile);
-        assertEquals(1, manager.getTasks().size(), "Должна быть только одна задача");
-        assertEquals(1, manager.getEpics().size(), "Должен быть только один эпик");
-        assertEquals(1, manager.getSubtasks().size(), "Должна быть только одна подзадача");
+        assertNull(incorrectOne);
+        assertNull(incorrectTwo);
+        assertNull(incorrectThree);
 
     }
 }

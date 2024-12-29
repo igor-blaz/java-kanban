@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
     private static final int ID_POSITION = 0;
@@ -19,7 +20,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.file = file;
     }
 
-    protected static FileBackedTaskManager loadFromFile(File file) {
+    public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
         List<String> lineTask = new ArrayList<>();
         String line;
@@ -36,30 +37,31 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     continue;
                 }
                 if (task.getClass() == Task.class) {
-                    manager.addNewTask(task);
+                    tasks.put(task.getId(), task);
                 } else if (task.getClass() == Subtask.class) {
                     Subtask subtask = (Subtask) task;
-                    manager.addNewSubtask(subtask);
+                    subtasks.put(subtask.getId(), subtask);
+                    Epic epic = epics.get(subtask.getEpicId());
+                    if (epic != null) {
+                        epic.addEpicSubtask(subtask.getId());
+                    }
                 } else if (task.getClass() == Epic.class) {
                     Epic epic = (Epic) task;
-                    manager.addNewEpic(epic);
+                    epics.put(task.getId(), epic);
                 } else {
                     System.out.println("Задача не обнаружена ");
                 }
             }
         } catch (IOException e) {
-            System.out.println("Ошибка при чтении файла.");
+            System.out.println("Ошибка при чтении файла: ");
+
         }
         return manager;
 
     }
 
-
-    protected void save() {
-
-
+    private void save() {
         try (FileWriter writer = new FileWriter(file)) {
-
             writer.write("id,type,name,status,description,epic\n");
             if (super.getTasks() != null) {
                 for (Task task : super.getTasks()) {
@@ -85,7 +87,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    protected String toString(Task task) {
+    private String toString(Task task) {
 
         List<String> taskInfo = new ArrayList<>(5);
         TaskType taskType;
@@ -123,8 +125,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 .replace("[", "");
     }
 
-    protected Task fromString(String value) {
-
+    private Task fromString(String value) {
 
         String[] rawTask = value.split(",");
         String unsureId = rawTask[ID_POSITION];
@@ -161,21 +162,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private TaskStatus statusConverter(String value) {
-        TaskStatus status;
 
-        if (value.equals("NEW")) {
-            status = TaskStatus.NEW;
-        } else if (value.equals("DONE")) {
-            status = TaskStatus.DONE;
-        } else if (value.equals("IN_PROGRESS")) {
-            status = TaskStatus.IN_PROGRESS;
-        } else {
-            System.out.println("Невозможно определить статус задачи " + value);
+        try {
+            return TaskStatus.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Невозможно определить статус задачи: " + value);
             return null;
         }
-
-
-        return status;
     }
 
     private boolean isCorrectStatus(String value) {
@@ -271,10 +264,4 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         super.deleteSubtasks();
         save();
     }
-
-    protected File getFile() {
-        return file;
-    }
-
-
 }

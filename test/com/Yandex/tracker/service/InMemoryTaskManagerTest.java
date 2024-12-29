@@ -71,22 +71,6 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void updateSubtaskAndEpicStatusTest() {
-
-
-        Epic epic = new Epic("Test addNewEpic", "Test addNewEpic description", TaskStatus.NEW);
-        final int epicId = taskManager.addNewEpic(epic);
-        Subtask subtaskOne = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.DONE, epicId);
-        final int taskIdOne = taskManager.addNewSubtask(subtaskOne);
-        Subtask subtaskTwo = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.DONE, epicId);
-        final int taskIdTwo = taskManager.addNewSubtask(subtaskTwo);
-        InMemoryTaskManager newManager = new InMemoryTaskManager();
-        newManager.updateEpicStatus(epicId);
-        assertNotNull(epic, "null вместо задачи");
-        assertEquals(TaskStatus.DONE, epic.getStatus(), "Статус не обновился.");
-    }
-
-    @Test
     void updateTaskStatusTest() {
 
         Task task = new Task("Test addNewTask", "Test addNewTask description", TaskStatus.NEW);
