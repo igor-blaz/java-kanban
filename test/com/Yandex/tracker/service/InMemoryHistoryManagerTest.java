@@ -1,8 +1,8 @@
-package com.Yandex.tracker.service;
+package com.yandex.tracker.service;
 
 
-import com.Yandex.tracker.model.Task;
-import com.Yandex.tracker.model.TaskStatus;
+import com.yandex.tracker.model.Task;
+import com.yandex.tracker.model.TaskStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
