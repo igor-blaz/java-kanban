@@ -1,6 +1,6 @@
-package com.Yandex.tracker.service;
+package com.yandex.tracker.service;
 
-import com.Yandex.tracker.model.*;
+import com.yandex.tracker.model.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -37,17 +37,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     continue;
                 }
                 if (task.getClass() == Task.class) {
-                    tasks.put(task.getId(), task);
+                    manager.tasks.put(task.getId(), task);
                 } else if (task.getClass() == Subtask.class) {
                     Subtask subtask = (Subtask) task;
-                    subtasks.put(subtask.getId(), subtask);
-                    Epic epic = epics.get(subtask.getEpicId());
+                    manager.subtasks.put(subtask.getId(), subtask);
+                    Epic epic = manager.epics.get(subtask.getEpicId());
                     if (epic != null) {
                         epic.addEpicSubtask(subtask.getId());
                     }
                 } else if (task.getClass() == Epic.class) {
                     Epic epic = (Epic) task;
-                    epics.put(task.getId(), epic);
+                    manager.epics.put(task.getId(), epic);
                 } else {
                     System.out.println("Задача не обнаружена ");
                 }

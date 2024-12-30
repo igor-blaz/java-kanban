@@ -1,9 +1,13 @@
-package com.Yandex.tracker.service;
+package com.yandex.tracker.service;
 
 
-import com.Yandex.tracker.model.Task;
+import com.yandex.tracker.model.Task;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 public class InMemoryHistoryManager implements HistoryManager {
 

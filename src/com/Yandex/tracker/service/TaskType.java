@@ -1,4 +1,4 @@
-package com.Yandex.tracker.service;
+package com.yandex.tracker.service;
 
 public enum TaskType {
     TASK,

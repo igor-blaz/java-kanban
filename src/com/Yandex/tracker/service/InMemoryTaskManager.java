@@ -1,17 +1,17 @@
-package com.Yandex.tracker.service;
+package com.yandex.tracker.service;
 
 import java.util.ArrayList;
 
-import com.Yandex.tracker.model.*;
+import com.yandex.tracker.model.*;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    protected static final HashMap<Integer, Task> tasks = new HashMap<>();
-    protected static final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    protected static final HashMap<Integer, Epic> epics = new HashMap<>();
+    protected final HashMap<Integer, Task> tasks = new HashMap<>();
+    protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    protected final HashMap<Integer, Epic> epics = new HashMap<>();
     private int id;
     private final HistoryManager history = Managers.getDefaultHistory();
 

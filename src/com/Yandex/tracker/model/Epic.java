@@ -1,4 +1,4 @@
-package com.Yandex.tracker.model;
+package com.yandex.tracker.model;
 
 
 import java.util.ArrayList;
