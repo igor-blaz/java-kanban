@@ -1,19 +1,37 @@
 package com.yandex.tracker.service;
 
-import java.util.ArrayList;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.yandex.tracker.model.*;
 
-import java.util.HashMap;
-import java.util.List;
-
 public class InMemoryTaskManager implements TaskManager {
+    protected final TreeSet<Task> prioritizedTasks = new TreeSet<>
+            (Comparator.comparing(Task::getStart));
 
     protected final HashMap<Integer, Task> tasks = new HashMap<>();
     protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     protected final HashMap<Integer, Epic> epics = new HashMap<>();
     private int id;
     private final HistoryManager history = Managers.getDefaultHistory();
+
+
+    public List<Task> getPrioritizedTasks() {
+        return prioritizedTasks.stream().toList();
+    }
+
+    public void addToPrioritizedTasks(Task task) {
+        if (task.getStart() != null) {
+            prioritizedTasks.add(task);
+        }
+    }
+
+    public boolean isCrossTime(Task task) {
+        return getPrioritizedTasks().stream().
+                anyMatch(anyTask -> task.getStart().
+                        isBefore(anyTask.getFinish()) &&
+                        task.getFinish().isAfter(anyTask.getStart()));
+    }
 
     @Override
     public List<Task> getHistory() {
@@ -35,19 +53,13 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Subtask> getEpicSubtasks(int epicId) {
-        ArrayList<Subtask> subtaskArray = new ArrayList<>();
-        if (epics.containsKey(epicId)) {
-            Epic epic = epics.get(epicId);
-            ArrayList<Integer> subtasksForEpic = epic.getEpicSubtasks();
-            for (Integer subtaskId : subtasksForEpic) {
-                Subtask subtask = subtasks.get(subtaskId);
-                if (subtask != null) {
-                    subtaskArray.add(subtask);
-                }
-            }
-        }
-        return subtaskArray;
+    public List<Subtask> getEpicSubtasks(int epicId) {
+        return Optional.ofNullable(epics.get(epicId))
+                .map(epic -> epic.getEpicSubtasks().stream()
+                        .map(subtasks::get)
+                        .filter(subtask -> subtask != null)
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     @Override
@@ -77,6 +89,7 @@ public class InMemoryTaskManager implements TaskManager {
         task.setId(id++);
         task.setStatus(TaskStatus.NEW);
         tasks.put(id, task);
+        addToPrioritizedTasks(task);
         return id;
     }
 
@@ -99,6 +112,7 @@ public class InMemoryTaskManager implements TaskManager {
             epic.addEpicSubtask(subtask.getId());
             updateEpicStatus(epicId);
         }
+        addToPrioritizedTasks(subtask);
         return subtask.getId();
     }
 
@@ -198,7 +212,7 @@ public class InMemoryTaskManager implements TaskManager {
 
             return;
         }
-        ArrayList<Subtask> subtasksForEpic = getEpicSubtasks(epicId);
+        List<Subtask> subtasksForEpic = getEpicSubtasks(epicId);
         if (subtasksForEpic.isEmpty()) {
             epic.setStatus(TaskStatus.NEW);
             return;

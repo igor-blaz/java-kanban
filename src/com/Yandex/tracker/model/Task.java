@@ -1,5 +1,7 @@
 package com.yandex.tracker.model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -8,6 +10,9 @@ public class Task {
     private final String description;
     private TaskStatus status;
     private int id;
+    private Duration duration = Duration.ZERO;
+    private LocalDateTime startTime;
+
 
     public Task(String name, String description, TaskStatus status) {
         this.name = name;
@@ -29,6 +34,28 @@ public class Task {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setDuration(Duration duration) {
+        if (duration.isPositive()) {
+            this.duration = duration;
+        }
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getStart() {
+        return startTime;
+    }
+
+    public LocalDateTime getFinish() {
+        return startTime.plus(duration);
+    }
+
+    public Duration getDuration() {
+        return duration;
     }
 
     public int getId() {
