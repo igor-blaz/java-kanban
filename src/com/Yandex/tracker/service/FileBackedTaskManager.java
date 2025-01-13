@@ -3,8 +3,14 @@ package com.yandex.tracker.service;
 import com.yandex.tracker.model.*;
 
 import java.io.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+
 import java.util.List;
+import java.util.Objects;
 
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
@@ -15,6 +21,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     private static final int STATUS_POSITION = 3;
     private static final int DESCRIPTION_POSITION = 4;
     private static final int EPIC_ID_POSITION = 5;
+
+    private static final int SUBTASK_START_POSITION = 6;
+    private static final int SUBTASK_DURATION_POSITION = 7;
+    private static final int SUBTASK_FINISH_POSITION = 8;
+
+    private static final int START_POSITION = 5;
+    private static final int DURATION_POSITION = 6;
+    private static final int FINISH_POSITION = 7;
 
     public FileBackedTaskManager(File file) {
         this.file = file;
@@ -62,7 +76,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void save() {
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write("id,type,name,status,description,epic\n");
+            writer.write("id,type,name,status,description,epic,start,duration,finish\n");
             if (super.getTasks() != null) {
                 for (Task task : super.getTasks()) {
                     writer.write(toString(task));
@@ -85,6 +99,22 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerSaveException("Произошла ошибка во время записи в файл.");
 
         }
+    }
+
+    private List<String> timeToString(List<String> taskInfo, Task task) {
+
+        if (task.getStart() != null) {
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM HH:mm");
+            taskInfo.add(task.getStart().format(formatter));
+            if (task.getDuration() != Duration.ZERO) {
+                long duration = task.getDuration().toMinutes();
+                taskInfo.add(duration + " минут");
+                taskInfo.add(task.getFinish().format(formatter));
+            }
+        }
+
+        return taskInfo;
     }
 
     private String toString(Task task) {
@@ -118,11 +148,77 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             System.out.println("Невозможно создать строку");
             return null;
         }
-
+        taskInfo = timeToString(taskInfo, task);
         return taskInfo.toString()
-                .replace(" ", "")
                 .replace("]", "")
                 .replace("[", "");
+    }
+
+    private Duration durationFromString(String type, String[] rawTask) {
+
+        String wordToRemove = " минут";
+        if (type.equals("TASK") || type.equals("EPIC")) {
+            StringBuilder sb = new StringBuilder(rawTask[DURATION_POSITION]);
+            int index = sb.indexOf(wordToRemove);
+            sb.replace(index, wordToRemove.length(), "");
+            sb.delete(0, 1);
+            if (isInteger(sb.toString())) {
+                return Duration.ofMinutes(Integer.parseInt(sb.toString()));
+            }
+        } else if (type.equals("SUBTASK")) {
+            StringBuilder subSb = new StringBuilder(rawTask[SUBTASK_DURATION_POSITION]);
+            int index = subSb.indexOf(wordToRemove);
+            subSb.replace(index, wordToRemove.length(), "");
+            subSb.delete(0, 1);
+            if (isInteger(subSb.toString())) {
+                return Duration.ofMinutes(Integer.parseInt(subSb.toString()));
+            }
+        }
+
+        return null;
+    }
+
+    private LocalDateTime finishFromString(String type, String[] rawTask)
+            throws DateTimeParseException {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM HH:mm");
+        if (type.equals("TASK") || type.equals("EPIC")) {
+            return LocalDateTime.parse(rawTask[FINISH_POSITION],
+                    formatter);
+        } else if (type.equals("SUBTASK")) {
+            return LocalDateTime.parse(rawTask[SUBTASK_FINISH_POSITION],
+                    formatter);
+        } else {
+            return null;
+        }
+    }
+
+    private LocalDateTime startFromString(String type, String[] rawTask)
+            throws DateTimeParseException {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM HH:mm");
+        if (type.equals("TASK") || type.equals("EPIC")) {
+            return LocalDateTime.parse(rawTask[START_POSITION],
+                    formatter);
+        } else if (type.equals("SUBTASK")) {
+            return LocalDateTime.parse(rawTask[SUBTASK_START_POSITION],
+                    formatter);
+        } else {
+            return null;
+        }
+    }
+
+    private void makeTime(Task task, String type, String[] rawTask) {
+        if (startFromString(type, rawTask) != null) {
+            task.setStartTime(startFromString(type, rawTask));
+        }
+        if (durationFromString(type, rawTask) != null) {
+            task.setDuration(Objects.requireNonNull(durationFromString(type, rawTask)));
+        }
+        if (finishFromString(type, rawTask) != null) {
+            task.setFinishTime(finishFromString(type, rawTask));
+        }
+
     }
 
     private Task fromString(String value) {
@@ -137,24 +233,26 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         if (isInteger(unsureId) && isCorrectStatus(unsureStatus) && isCorrectType(type)) {
             int id = Integer.parseInt(rawTask[ID_POSITION]);
             TaskStatus status = statusConverter(unsureStatus);
+            switch (type) {
+                case ("TASK"):
+                    Task task = new Task(name, description, status);
+                    task.setId(id);
+                    makeTime(task, type, rawTask);
+                    return task;
+                case ("SUBTASK"):
+                    if (isInteger(rawTask[EPIC_ID_POSITION])) {
+                        int epicId = Integer.parseInt(rawTask[EPIC_ID_POSITION]);
+                        Subtask subtask = new Subtask(name, description, status, epicId);
+                        subtask.setId(id);
+                        makeTime(subtask, type, rawTask);
+                        return subtask;
+                    }
 
-            if (type.equals("TASK")) {
-                Task task = new Task(name, description, status);
-                task.setId(id);
-                return task;
-            } else if (type.equals("SUBTASK")) {
-                if (isInteger(rawTask[EPIC_ID_POSITION])) {
-                    int epicId = Integer.parseInt(rawTask[EPIC_ID_POSITION]);
-                    Subtask subtask = new Subtask(name, description, status, epicId);
-                    subtask.setId(id);
-                    return subtask;
-                }
-
-            } else if (type.equals("EPIC")) {
-                Epic epic = new Epic(name, description, status);
-                epic.setId(id);
-                return epic;
-
+                case ("EPIC"):
+                    Epic epic = new Epic(name, description, status);
+                    epic.setId(id);
+                    makeTime(epic, type, rawTask);
+                    return epic;
             }
 
         }
