@@ -20,6 +20,26 @@ public class InMemoryTaskManager implements TaskManager {
         return prioritizedTasks.stream().toList();
     }
 
+    public void deletePrioritizedTask(Task task) {
+
+        prioritizedTasks.remove(task);
+
+    }
+
+    public void deleteAllPrioritizedTask() {
+        prioritizedTasks.removeIf(task -> task.getClass() == Task.class);
+    }
+
+    public void deleteAllPrioritizedEpics() {
+        prioritizedTasks.removeIf(task -> task.getClass() == Epic.class ||
+                task.getClass() == Subtask.class);
+    }
+
+    public void deleteAllPrioritizedSubtasks() {
+        prioritizedTasks.removeIf(task -> task.getClass() == Subtask.class);
+    }
+
+
     public void addToPrioritizedTasks(Task task) {
         if (task.getStart() != null) {
             prioritizedTasks.add(task);
@@ -57,7 +77,7 @@ public class InMemoryTaskManager implements TaskManager {
         return Optional.ofNullable(epics.get(epicId))
                 .map(epic -> epic.getEpicSubtasks().stream()
                         .map(subtasks::get)
-                        .filter(subtask -> subtask != null)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
     }
@@ -90,6 +110,10 @@ public class InMemoryTaskManager implements TaskManager {
         task.setStatus(TaskStatus.NEW);
         tasks.put(id, task);
         addToPrioritizedTasks(task);
+        if (isCrossTime(task)) {
+            System.out.print("Кажется, Вам придется выполнить несколько задач одновременно");
+            System.out.print("Режим многозадачности включен");
+        }
         return id;
     }
 
@@ -110,9 +134,13 @@ public class InMemoryTaskManager implements TaskManager {
         if (epics.containsKey(epicId)) {
             Epic epic = epics.get(epicId);
             epic.addEpicSubtask(subtask.getId());
+            epic.setTimeForEpic();
             updateEpicStatus(epicId);
+            addToPrioritizedTasks(subtask);
+        } else {
+            System.out.println("У subtask нет своего epic");
         }
-        addToPrioritizedTasks(subtask);
+
         return subtask.getId();
     }
 
@@ -134,6 +162,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
             subtasks.put(subtask.getId(), subtask);
+            subtasks.put(subtask.getId(), subtask);
             updateEpicStatus(subtask.getEpicId());
         }
     }
@@ -141,12 +170,14 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteTask(int id) {
         tasks.remove(id);
+        deletePrioritizedTask(getTask(id));
         history.remove(id);
     }
 
     @Override
     public void deleteEpic(int id) {
         final Epic epic = epics.remove(id);
+        deletePrioritizedTask(epic);
         if (epic != null) {
             history.remove(id);
             for (Integer subtaskId : epic.getEpicSubtasks()) {
@@ -159,6 +190,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteSubtask(int id) {
         Subtask subtask = subtasks.remove(id);
+        deletePrioritizedTask(subtask);
         Epic epic = epics.get(subtask.getEpicId());
         history.remove(id);
         ArrayList<Integer> subtasksIdForEpics = epic.getEpicSubtasks();
@@ -168,7 +200,7 @@ public class InMemoryTaskManager implements TaskManager {
                 break;
             }
         }
-
+        epic.setTimeForEpic();
         updateEpicStatus(epic.getId());
     }
 
@@ -177,6 +209,7 @@ public class InMemoryTaskManager implements TaskManager {
         for (Integer taskId : tasks.keySet()) {
             history.remove(taskId);
         }
+        deleteAllPrioritizedTask();
         tasks.clear();
     }
 
@@ -188,12 +221,15 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.clear();
         for (Epic epic : epics.values()) {
             epic.clearSubtasks();
+            epic.setTimeForEpic();
             updateEpicStatus(epic.getId());
         }
+        deleteAllPrioritizedSubtasks();
     }
 
     @Override
     public void deleteEpics() {
+        deleteAllPrioritizedEpics();
         for (Integer epicId : epics.keySet()) {
             history.remove(epicId);
         }

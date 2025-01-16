@@ -8,30 +8,35 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.time.LocalDateTime;
 
 
 import static com.yandex.tracker.service.FileBackedTaskManager.loadFromFile;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FileBackedTaskManagerTest {
+public class FileBackedTaskManagerTest  {
     private File file;
     private Task taskOne;
     private Epic taskTwo;
     private Subtask taskThree;
+    private Task timeTask;
     private FileBackedTaskManager fileBacked;
 
     @BeforeEach
     void setUp() {
-
+        File file = new File("warehouse/test_data.csv");
         fileBacked = new FileBackedTaskManager(file);
 
-        taskOne = new Task("имя", "описание", TaskStatus.NEW);
+        taskOne = new Task("и777777", "описание", TaskStatus.NEW);
         taskOne.setId(17);
         taskTwo = new Epic("имя2", "описание2", TaskStatus.NEW);
         taskTwo.setId(99);
         taskThree = new Subtask("имя2", "описание2", TaskStatus.NEW, taskTwo.getId());
         taskThree.setId(4);
-
+        timeTask = new Task("Задание со временем", "Описание", TaskStatus.NEW);
+        timeTask.setId(33);
+        timeTask.setStartTime(LocalDateTime.now());
+        timeTask.setDuration(14);
     }
 
 
@@ -59,6 +64,12 @@ public class FileBackedTaskManagerTest {
         assertNull(incorrectTwo);
         assertNull(incorrectThree);
 
+    }
+
+    @Test
+    void file() {
+        fileBacked.addNewTask(timeTask);
+        fileBacked.addNewTask(timeTask);
     }
 }
 

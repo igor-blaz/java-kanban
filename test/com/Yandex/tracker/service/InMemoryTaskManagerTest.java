@@ -13,11 +13,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryTaskManagerTest {
+class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
     private TaskManager taskManager;
 
-
+    @Override
+    protected InMemoryTaskManager createTaskManager() {
+        return new InMemoryTaskManager();
+    }
     @BeforeEach
     void setUp() {
         taskManager = Managers.getDefault();
@@ -26,6 +29,7 @@ class InMemoryTaskManagerTest {
         taskManager.deleteEpics();
         taskManager.deleteSubtasks();
         taskManager.deleteTasks();
+        taskManager = createTaskManager();
     }
 
     @Test

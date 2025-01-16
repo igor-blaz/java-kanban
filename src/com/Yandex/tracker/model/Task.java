@@ -12,7 +12,7 @@ public class Task {
     private int id;
     private Duration duration = Duration.ZERO;
     private LocalDateTime startTime;
-
+    private LocalDateTime finishTime;
 
     public Task(String name, String description, TaskStatus status) {
         this.name = name;
@@ -42,8 +42,18 @@ public class Task {
         }
     }
 
+    public void setDuration(int intDuration) {
+        Duration duration = Duration.ofMinutes(intDuration);
+        if (duration.isPositive()) {
+            this.duration = duration;
+        }
+    }
+
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+    public void setFinishTime(LocalDateTime finishTime) {
+        this.finishTime = finishTime;
     }
 
     public LocalDateTime getStart() {
