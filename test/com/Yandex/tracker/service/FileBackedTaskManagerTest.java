@@ -17,9 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     File file = new File("warehouse/test_data.csv");
-    private Task taskOne;
     private Epic taskTwo;
-    private Subtask taskThree;
     private Task timeTask;
     private FileBackedTaskManager fileBacked;
 
@@ -33,11 +31,11 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
 
         fileBacked = new FileBackedTaskManager(file);
 
-        taskOne = new Task("и777777", "описание", TaskStatus.NEW);
+        Task taskOne = new Task("и777777", "описание", TaskStatus.NEW);
         taskOne.setId(17);
         taskTwo = new Epic("имя2", "описание2", TaskStatus.NEW);
         taskTwo.setId(99);
-        taskThree = new Subtask("имя2", "описание2", TaskStatus.NEW, taskTwo.getId());
+        Subtask taskThree = new Subtask("имя2", "описание2", TaskStatus.NEW, taskTwo.getId());
         taskThree.setId(4);
         timeTask = new Task("Задание со временем", "Описание", TaskStatus.NEW);
         timeTask.setId(33);
