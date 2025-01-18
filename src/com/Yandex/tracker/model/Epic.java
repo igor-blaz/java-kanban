@@ -1,7 +1,6 @@
 package com.yandex.tracker.model;
 
 
-import com.yandex.tracker.service.FileBackedTaskManager;
 import com.yandex.tracker.service.InMemoryTaskManager;
 
 import java.time.Duration;
@@ -41,7 +40,7 @@ public class Epic extends Task {
     }
 
     public void setTimeForEpic() {
-        if (subtaskIds.size()>=2) {
+        if (subtaskIds.size() >= 2) {
             setStartTime(getOldestStart());
             setFinishTime(getNewestFinish());
             if (getOldestStart() != null && getNewestFinish() != null) {
