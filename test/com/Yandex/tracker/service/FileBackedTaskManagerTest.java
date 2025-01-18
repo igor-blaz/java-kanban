@@ -4,6 +4,7 @@ import com.yandex.tracker.model.Epic;
 import com.yandex.tracker.model.Subtask;
 import com.yandex.tracker.model.Task;
 import com.yandex.tracker.model.TaskStatus;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,17 +15,22 @@ import java.time.LocalDateTime;
 import static com.yandex.tracker.service.FileBackedTaskManager.loadFromFile;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FileBackedTaskManagerTest  {
-    private File file;
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+    File file = new File("warehouse/test_data.csv");
     private Task taskOne;
     private Epic taskTwo;
     private Subtask taskThree;
     private Task timeTask;
     private FileBackedTaskManager fileBacked;
 
+    @Override
+    protected FileBackedTaskManager createTaskManager() {
+        return new FileBackedTaskManager(file);
+    }
+
     @BeforeEach
-    void setUp() {
-        File file = new File("warehouse/test_data.csv");
+    void setUpFileBacked() {
+
         fileBacked = new FileBackedTaskManager(file);
 
         taskOne = new Task("и777777", "описание", TaskStatus.NEW);
@@ -35,10 +41,9 @@ public class FileBackedTaskManagerTest  {
         taskThree.setId(4);
         timeTask = new Task("Задание со временем", "Описание", TaskStatus.NEW);
         timeTask.setId(33);
-        timeTask.setStartTime(LocalDateTime.now());
+        timeTask.setStartTime(LocalDateTime.now().minusHours(3));
         timeTask.setDuration(14);
     }
-
 
     @Test
     void incorrectTaskFromStringTest() {
@@ -67,9 +72,69 @@ public class FileBackedTaskManagerTest  {
     }
 
     @Test
-    void file() {
-        fileBacked.addNewTask(timeTask);
-        fileBacked.addNewTask(timeTask);
+    void makeFileNoException() {
+        Assertions.assertDoesNotThrow(() -> fileBacked.addNewTask(timeTask),
+                "Запись в файл не должна приводить к исключению");
+    }
+
+    @Test
+    void allSubtaskIsNew() {
+        super.allSubtaskIsNew();
+    }
+
+    @Test
+    void allSubtaskIsDone() {
+        super.allSubtaskIsDone();
+    }
+
+    @Test
+    void SubtaskIsNewAndDone() {
+        super.SubtaskIsNewAndDone();
+    }
+
+    @Test
+    void SubtaskInProgress() {
+        super.SubtaskInProgress();
+    }
+
+    @Test
+    void createTaskTest() {
+        super.createTaskTest();
+    }
+
+    @Test
+    void createAndRetrieveEpicWithSubtasksTest() {
+        super.createAndRetrieveEpicWithSubtasksTest();
+    }
+
+    @Test
+    void updateTaskStatusTest() {
+        super.updateTaskStatusTest();
+    }
+
+    @Test
+    void deleteTaskByIdTest() {
+        super.deleteTaskByIdTest();
+    }
+
+    @Test
+    void deleteAllTasksTest() {
+        super.deleteAllTasksTest();
+    }
+
+    @Test
+    void deleteSubtaskByIdTest() {
+        super.deleteSubtaskByIdTest();
+    }
+
+    @Test
+    void deleteAllSubtasksByEpicTest() {
+        super.deleteAllSubtasksByEpicTest();
+    }
+
+    @Test
+    void deleteAllEpicsTest() {
+        super.deleteAllEpicsTest();
     }
 }
 

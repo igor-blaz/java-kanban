@@ -47,10 +47,17 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     public boolean isCrossTime(Task task) {
-        return getPrioritizedTasks().stream().
-                anyMatch(anyTask -> task.getStart().
-                        isBefore(anyTask.getFinish()) &&
-                        task.getFinish().isAfter(anyTask.getStart()));
+        if (task.getStart() != null && getPrioritizedTasks().size() > 1) {
+            return getPrioritizedTasks().stream().
+                    anyMatch(anyTask -> task.getStart().
+                            isBefore(anyTask.getFinish()) &&
+                            task.getFinish().isAfter(anyTask.getStart()) ||
+                            (anyTask.getStart().isBefore(task.getStart()) &&
+                                    anyTask.getFinish().isBefore(task.getStart())));
+        } else {
+            return false;
+
+        }
     }
 
     @Override
@@ -105,36 +112,44 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewTask(Task task) {
-
-        task.setId(id++);
         task.setStatus(TaskStatus.NEW);
-        tasks.put(id, task);
+        if (task.getId() == 0) {
+            task.setId(id++);
+            tasks.put(id, task);
+        } else if (task.getId() != 0) {
+            tasks.put(task.getId(), task);
+        }
         addToPrioritizedTasks(task);
         if (isCrossTime(task)) {
-            System.out.print("Кажется, Вам придется выполнить несколько задач одновременно");
-            System.out.print("Режим многозадачности включен");
+            System.out.println("Кажется, Вам придется выполнить несколько задач одновременно ");
         }
         return id;
     }
 
     @Override
     public int addNewEpic(Epic epic) {
+
         if (epic.getId() == 0) {
             epic.setId(id++);
+            epics.put(id, epic);
+            return epic.getId();
         }
-        epics.put(id, epic);
-        return id;
+        epics.put(epic.getId(), epic);
+        return epic.getId();
     }
 
     @Override
     public int addNewSubtask(Subtask subtask) {
         int epicId = subtask.getEpicId();
+
         subtask.setId(id++);
         subtasks.put(subtask.getId(), subtask);
         if (epics.containsKey(epicId)) {
             Epic epic = epics.get(epicId);
             epic.addEpicSubtask(subtask.getId());
-            epic.setTimeForEpic();
+            if (prioritizedTasks.size() >= 2) {
+                epic.setTimeForEpic();
+            }
             updateEpicStatus(epicId);
             addToPrioritizedTasks(subtask);
         } else {

@@ -79,13 +79,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             writer.write("id,type,name,status,description,epic,start,duration,finish\n");
             if (super.getTasks() != null) {
                 for (Task task : super.getTasks()) {
-                    writer.write(toString(task));
+                    writer.write(Objects.requireNonNull(toString(task)));
                     writer.write("\n");
                 }
             }
             if (super.getSubtasks() != null) {
                 for (Subtask subtask : super.getSubtasks()) {
-                    writer.write(toString(subtask));
+                    writer.write(Objects.requireNonNull(toString(subtask)));
                     writer.write("\n");
                 }
             }
@@ -119,7 +119,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private String toString(Task task) {
 
-        List<String> taskInfo = new ArrayList<>(5);
+        List<String> taskInfo = new ArrayList<>(9);
         TaskType taskType;
 
 

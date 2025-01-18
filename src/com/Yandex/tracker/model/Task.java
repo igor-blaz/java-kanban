@@ -9,7 +9,7 @@ public class Task {
     private String name;
     private final String description;
     private TaskStatus status;
-    private int id;
+    private int id = 0;
     private Duration duration = Duration.ZERO;
     private LocalDateTime startTime;
     private LocalDateTime finishTime;
@@ -52,6 +52,7 @@ public class Task {
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
+
     public void setFinishTime(LocalDateTime finishTime) {
         this.finishTime = finishTime;
     }
