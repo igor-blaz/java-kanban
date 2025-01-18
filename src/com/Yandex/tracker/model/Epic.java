@@ -22,20 +22,20 @@ public class Epic extends Task {
     }
 
     public LocalDateTime getOldestStart() {
-        return subtaskIds.stream().
-                map(manager::getSubtask).
-                map(Subtask::getStart).
-                min(Comparator.naturalOrder()).
-                orElse(null);
+        return subtaskIds.stream()
+                .map(manager::getSubtask)
+                .map(Subtask::getStart)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
 
     }
 
     public LocalDateTime getNewestFinish() {
-        return subtaskIds.stream().
-                map(manager::getSubtask).
-                map(Subtask::getFinish).
-                max(Comparator.naturalOrder()).
-                orElse(null);
+        return subtaskIds.stream()
+                .map(manager::getSubtask)
+                .map(Subtask::getFinish)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
 
     }
 
