@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 import com.yandex.tracker.model.*;
 
 public class InMemoryTaskManager implements TaskManager {
-    protected final TreeSet<Task> prioritizedTasks = new TreeSet<>
-            (Comparator.comparing(Task::getStart));
+    protected final TreeSet<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStart));
 
     protected final HashMap<Integer, Task> tasks = new HashMap<>();
     protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
@@ -48,9 +47,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     public boolean isCrossTime(Task task) {
         if (task.getStart() != null && getPrioritizedTasks().size() > 1) {
-            return getPrioritizedTasks().stream().
-                    anyMatch(anyTask -> task.getStart().
-                            isBefore(anyTask.getFinish()) &&
+            return getPrioritizedTasks().stream()
+            .anyMatch(anyTask -> task.getStart()
+                    .isBefore(anyTask.getFinish()) &&
                             task.getFinish().isAfter(anyTask.getStart()) ||
                             (anyTask.getStart().isBefore(task.getStart()) &&
                                     anyTask.getFinish().isBefore(task.getStart())));
