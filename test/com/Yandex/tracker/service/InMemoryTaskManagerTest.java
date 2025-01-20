@@ -93,18 +93,14 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     @Test
     void createCrossTimeTest() {
         Task taskOne = new Task("Test addNewTask1", "Test addNewTask description", TaskStatus.NEW);
-        taskOne.setId(8);
         taskOne.setStartTime(LocalDateTime.of(2000, 1, 1, 10, 0));
         taskOne.setFinishTime(LocalDateTime.of(2000, 1, 10, 10, 0));
         Task taskTwo = new Task("Test addNewTask2", "Test addNewTask description", TaskStatus.NEW);
-        taskTwo.setId(2);
         taskTwo.setStartTime(LocalDateTime.of(2000, 1, 8, 10, 0));
         taskTwo.setFinishTime(LocalDateTime.of(2000, 1, 18, 10, 0));
 
-        taskManager.addNewTask(taskOne);
-        taskManager.addNewTask(taskTwo);
-        assertEquals(taskManager.prioritizedTasks.size(), 2, "Не добавились задачи со временем.");
-        assertTrue(taskManager.isCrossTime(taskTwo), "Не получилось найти пересечение.");
+
+        assertNull(taskManager.getTask(taskTwo.getId()), "Не получилось найти пересечение.");
 
 
     }

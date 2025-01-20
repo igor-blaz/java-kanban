@@ -8,6 +8,8 @@ import com.yandex.tracker.model.Task;
 import java.util.List;
 
 public interface TaskManager {
+    List<Task> getPrioritizedTasks();
+
     List<Task> getHistory();
 
     List<Subtask> getSubtasks();

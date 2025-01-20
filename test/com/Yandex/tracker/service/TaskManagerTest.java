@@ -104,12 +104,13 @@ abstract class TaskManagerTest<T extends TaskManager> {
         taskManager.deleteSubtasks();
 
         Epic epic = new Epic("Test addNewEpic", "Test addNewEpic description", TaskStatus.NEW);
+        epic.setId(77);
+        taskManager.addNewEpic(epic);
+        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW, epic.getId());
+        subtask.setId(8);
+        taskManager.addNewSubtask(subtask);
 
-        final int epicId = taskManager.addNewEpic(epic);
-        Subtask subtask = new Subtask("Test addNewSubtask", "Test addNewSubtask description", TaskStatus.NEW, epicId);
-        final int taskId = taskManager.addNewSubtask(subtask);
-
-        final Task savedTask = taskManager.getSubtask(taskId);
+        Subtask savedTask = taskManager.getSubtask(subtask.getId());
 
         assertNotNull(savedTask, "Задача не найдена.");
         assertEquals(subtask, savedTask, "Задачи не совпадают.");
