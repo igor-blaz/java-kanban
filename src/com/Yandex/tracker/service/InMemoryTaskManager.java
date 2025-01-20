@@ -27,19 +27,6 @@ public class InMemoryTaskManager implements TaskManager {
 
     }
 
-    public void deleteAllPrioritizedTask() {
-        prioritizedTasks.removeIf(task -> task.getClass() == Task.class);
-    }
-
-    public void deleteAllPrioritizedEpics() {
-        prioritizedTasks.removeIf(task -> task.getClass() == Epic.class ||
-                task.getClass() == Subtask.class);
-    }
-
-    public void deleteAllPrioritizedSubtasks() {
-        prioritizedTasks.removeIf(task -> task.getClass() == Subtask.class);
-    }
-
 
     private void addToPrioritizedTasks(Task task) {
         if (task.getStart() != null) {
@@ -236,8 +223,8 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTasks() {
         for (Integer taskId : tasks.keySet()) {
             history.remove(taskId);
+            prioritizedTasks.remove(tasks.get(taskId));
         }
-        deleteAllPrioritizedTask();
         tasks.clear();
     }
 
@@ -245,6 +232,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteSubtasks() {
         for (Integer subtaskId : subtasks.keySet()) {
             history.remove(subtaskId);
+            prioritizedTasks.remove(subtasks.get(subtaskId));
         }
         subtasks.clear();
         for (Epic epic : epics.values()) {
@@ -252,7 +240,6 @@ public class InMemoryTaskManager implements TaskManager {
             setTimeForEpic(epic);
             updateEpicStatus(epic.getId());
         }
-        deleteAllPrioritizedSubtasks();
     }
 
     @Override
