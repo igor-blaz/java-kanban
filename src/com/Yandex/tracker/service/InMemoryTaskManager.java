@@ -100,7 +100,6 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public int addNewTask(Task task) {
         if (isCrossTime(task)) {
-            System.out.println(9);
             return -1;
 
         }
