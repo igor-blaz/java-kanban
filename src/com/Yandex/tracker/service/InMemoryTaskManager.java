@@ -100,8 +100,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public int addNewTask(Task task) {
         if (isCrossTime(task)) {
-            return -1;
-
+            return -2;
         }
         task.setStatus(TaskStatus.NEW);
         if (task.getId() == 0) {
@@ -129,6 +128,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addNewSubtask(Subtask subtask) {
+        if (isCrossTime(subtask)) {
+            return -2;
+        }
         int epicId = subtask.getEpicId();
         if (epics.containsKey(epicId)) {
             subtask.setId(id++);

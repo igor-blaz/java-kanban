@@ -289,21 +289,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public int addNewSubtask(Subtask subtask) {
+    public int addNewSubtask(Subtask subtask) throws ManagerSaveException {
         super.addNewSubtask(subtask);
         save();
         return subtask.getId();
     }
 
     @Override
-    public int addNewTask(Task task) {
+    public int addNewTask(Task task) throws ManagerSaveException {
         super.addNewTask(task);
         save();
         return task.getId();
     }
 
     @Override
-    public int addNewEpic(Epic epic) {
+    public int addNewEpic(Epic epic) throws ManagerSaveException {
         super.addNewEpic(epic);
         save();
         return epic.getId();
