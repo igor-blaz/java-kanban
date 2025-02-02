@@ -14,6 +14,7 @@ public class BaseHttpHandler {
         h.getResponseBody().write(resp);
         h.close();
     }
+
     protected void sendOk(HttpExchange h) throws IOException {
         String text = "OK";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
@@ -40,6 +41,7 @@ public class BaseHttpHandler {
         h.getResponseBody().write(resp);
         h.close();
     }
+
     protected void sendInternalServerError(HttpExchange h) throws IOException {
         String text = "Internal Server Error";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
@@ -48,6 +50,7 @@ public class BaseHttpHandler {
         h.getResponseBody().write(resp);
         h.close();
     }
+
     protected void sendBadRequest(HttpExchange h) throws IOException {
         String text = "Bad Request";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
