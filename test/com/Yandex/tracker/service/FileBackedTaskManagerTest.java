@@ -1,0 +1,139 @@
+package com.yandex.tracker.service;
+
+import com.yandex.tracker.model.Epic;
+import com.yandex.tracker.model.Subtask;
+import com.yandex.tracker.model.Task;
+import com.yandex.tracker.model.TaskStatus;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.*;
+import java.time.LocalDateTime;
+
+
+import static com.yandex.tracker.service.FileBackedTaskManager.loadFromFile;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+    File file = new File("warehouse/test_data.csv");
+    private Epic taskTwo;
+    private Task timeTask;
+    private FileBackedTaskManager fileBacked;
+
+    @Override
+    protected FileBackedTaskManager createTaskManager() {
+        return new FileBackedTaskManager(file);
+    }
+
+    @BeforeEach
+    void setUpFileBacked() {
+
+        fileBacked = new FileBackedTaskManager(file);
+
+        Task taskOne = new Task("и777777", "описание", TaskStatus.NEW);
+        taskOne.setId(17);
+        taskTwo = new Epic("имя2", "описание2", TaskStatus.NEW);
+        taskTwo.setId(99);
+        Subtask taskThree = new Subtask("имя2", "описание2", TaskStatus.NEW, taskTwo.getId());
+        taskThree.setId(4);
+        timeTask = new Task("Задание со временем", "Описание", TaskStatus.NEW);
+        timeTask.setId(33);
+        timeTask.setStartTime(LocalDateTime.now().minusHours(3));
+        timeTask.setDuration(14);
+    }
+
+    @Test
+    void incorrectTaskFromStringTest() {
+
+        String incorrect = ("37,EPI,купить хлеб,IN_PROGRESS,3456345");
+        String incorrectStatus = ("1000,EPIC,купить_хлеб,ERROR,Сходить_в_Ленту");
+        String incorrectType = ("100,СЛОЖНО!!!,купить_хлеб,DONE,Сходить_в_Ленту");
+
+
+        File incorrectFile = new File(incorrect);
+        File incorrectStatusFile = new File(incorrectStatus);
+        File incorrectTypeFile = new File(incorrectType);
+
+        FileBackedTaskManager incorrectFromManager = loadFromFile(incorrectFile);
+        FileBackedTaskManager incorrectStatusFromManager = loadFromFile(incorrectStatusFile);
+        FileBackedTaskManager incorrectTypeFromManager = loadFromFile(incorrectTypeFile);
+
+        Task incorrectOne = incorrectFromManager.getTask(37);
+        Task incorrectTwo = incorrectStatusFromManager.getTask(1000);
+        Task incorrectThree = incorrectTypeFromManager.getTask(100);
+
+        assertNull(incorrectOne);
+        assertNull(incorrectTwo);
+        assertNull(incorrectThree);
+
+    }
+
+    @Test
+    void makeFileNoException() {
+        Assertions.assertDoesNotThrow(() -> fileBacked.addNewTask(timeTask),
+                "Запись в файл не должна приводить к исключению");
+    }
+
+    @Test
+    void allSubtaskIsNew() {
+        super.allSubtaskIsNew();
+    }
+
+    @Test
+    void allSubtaskIsDone() {
+        super.allSubtaskIsDone();
+    }
+
+    @Test
+    void SubtaskIsNewAndDone() {
+        super.SubtaskIsNewAndDone();
+    }
+
+    @Test
+    void SubtaskInProgress() {
+        super.SubtaskInProgress();
+    }
+
+    @Test
+    void createTaskTest() {
+        super.createTaskTest();
+    }
+
+    @Test
+    void createAndRetrieveEpicWithSubtasksTest() {
+        super.createAndRetrieveEpicWithSubtasksTest();
+    }
+
+    @Test
+    void updateTaskStatusTest() {
+        super.updateTaskStatusTest();
+    }
+
+    @Test
+    void deleteTaskByIdTest() {
+        super.deleteTaskByIdTest();
+    }
+
+    @Test
+    void deleteAllTasksTest() {
+        super.deleteAllTasksTest();
+    }
+
+    @Test
+    void deleteSubtaskByIdTest() {
+        super.deleteSubtaskByIdTest();
+    }
+
+    @Test
+    void deleteAllSubtasksByEpicTest() {
+        super.deleteAllSubtasksByEpicTest();
+    }
+
+    @Test
+    void deleteAllEpicsTest() {
+        super.deleteAllEpicsTest();
+    }
+}
+
+

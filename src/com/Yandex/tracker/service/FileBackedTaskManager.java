@@ -1,0 +1,365 @@
+package com.yandex.tracker.service;
+
+import com.yandex.tracker.model.*;
+
+import java.io.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+
+import java.util.List;
+import java.util.Objects;
+
+
+public class FileBackedTaskManager extends InMemoryTaskManager {
+    private final File file;
+    private static final int ID_POSITION = 0;
+    private static final int TYPE_POSITION = 1;
+    private static final int NAME_POSITION = 2;
+    private static final int STATUS_POSITION = 3;
+    private static final int DESCRIPTION_POSITION = 4;
+    private static final int EPIC_ID_POSITION = 5;
+
+    private static final int SUBTASK_START_POSITION = 6;
+    private static final int SUBTASK_DURATION_POSITION = 7;
+    private static final int SUBTASK_FINISH_POSITION = 8;
+
+    private static final int START_POSITION = 5;
+    private static final int DURATION_POSITION = 6;
+    private static final int FINISH_POSITION = 7;
+
+    public FileBackedTaskManager(File file) {
+        this.file = file;
+    }
+
+    public static FileBackedTaskManager loadFromFile(File file) {
+        FileBackedTaskManager manager = new FileBackedTaskManager(file);
+        List<String> lineTask = new ArrayList<>();
+        String line;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+
+            while ((line = reader.readLine()) != null) {
+                lineTask.add(line);
+            }
+            lineTask.remove(0);
+            for (String str : lineTask) {
+                Task task = manager.fromString(str);
+                if (task == null) {
+                    System.out.println("Некорректная строка: " + str);
+                    continue;
+                }
+                if (task.getClass() == Task.class) {
+                    manager.tasks.put(task.getId(), task);
+                } else if (task.getClass() == Subtask.class) {
+                    Subtask subtask = (Subtask) task;
+                    manager.subtasks.put(subtask.getId(), subtask);
+                    Epic epic = manager.epics.get(subtask.getEpicId());
+                    if (epic != null) {
+                        epic.addEpicSubtask(subtask.getId());
+                    }
+                } else if (task.getClass() == Epic.class) {
+                    Epic epic = (Epic) task;
+                    manager.epics.put(task.getId(), epic);
+                } else {
+                    System.out.println("Задача не обнаружена ");
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Ошибка при чтении файла: ");
+
+        }
+        return manager;
+
+    }
+
+    private void save() {
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write("id,type,name,status,description,epic,start,duration,finish\n");
+            if (super.getTasks() != null) {
+                for (Task task : super.getTasks()) {
+                    writer.write(Objects.requireNonNull(toString(task)));
+                    writer.write("\n");
+                }
+            }
+            if (super.getSubtasks() != null) {
+                for (Subtask subtask : super.getSubtasks()) {
+                    writer.write(Objects.requireNonNull(toString(subtask)));
+                    writer.write("\n");
+                }
+            }
+            if (super.getEpics() != null) {
+                for (Epic epic : super.getEpics()) {
+                    writer.write(toString(epic));
+                    writer.write("\n");
+                }
+            }
+        } catch (IOException e) {
+            throw new ManagerSaveException("Произошла ошибка во время записи в файл.");
+
+        }
+    }
+
+    private List<String> timeToString(List<String> taskInfo, Task task) {
+
+        if (task.getStart() != null) {
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM HH:mm");
+            taskInfo.add(task.getStart().format(formatter));
+            if (task.getDuration() != Duration.ZERO) {
+                long duration = task.getDuration().toMinutes();
+                taskInfo.add(duration + " минут");
+                taskInfo.add(task.getFinish().format(formatter));
+            }
+        }
+
+        return taskInfo;
+    }
+
+    private String toString(Task task) {
+
+        List<String> taskInfo = new ArrayList<>(9);
+        TaskType taskType;
+
+
+        taskInfo.add(ID_POSITION, String.valueOf(task.getId()));
+        taskInfo.add(TYPE_POSITION, null);
+        taskInfo.add(NAME_POSITION, String.valueOf(task.getName()));
+        taskInfo.add(STATUS_POSITION, String.valueOf(task.getStatus()));
+        taskInfo.add(DESCRIPTION_POSITION, String.valueOf(task.getDescription()));
+
+
+        if (task.getClass() == Subtask.class) {
+            taskType = TaskType.SUBTASK;
+            taskInfo.set(TYPE_POSITION, String.valueOf(taskType));
+            taskInfo.add(EPIC_ID_POSITION, String.valueOf(((Subtask) task).getEpicId()));
+
+        } else if (task.getClass() == Task.class) {
+            taskType = TaskType.TASK;
+            taskInfo.set(TYPE_POSITION, String.valueOf(taskType));
+        } else if (task.getClass() == Epic.class) {
+            taskType = TaskType.EPIC;
+            taskInfo.set(TYPE_POSITION, String.valueOf(taskType));
+        } else if (taskInfo.get(TYPE_POSITION) == null) {
+            System.out.println("Невозможно определить тип задачи.");
+            return null;
+        } else {
+            System.out.println("Невозможно создать строку");
+            return null;
+        }
+        taskInfo = timeToString(taskInfo, task);
+        return taskInfo.toString()
+                .replace("]", "")
+                .replace("[", "");
+    }
+
+    private Duration durationFromString(String type, String[] rawTask) {
+
+        String wordToRemove = " минут";
+        if (type.equals("TASK") || type.equals("EPIC")) {
+            StringBuilder sb = new StringBuilder(rawTask[DURATION_POSITION]);
+            int index = sb.indexOf(wordToRemove);
+            sb.replace(index, wordToRemove.length(), "");
+            sb.delete(0, 1);
+            if (isInteger(sb.toString())) {
+                return Duration.ofMinutes(Integer.parseInt(sb.toString()));
+            }
+        } else if (type.equals("SUBTASK")) {
+            StringBuilder subSb = new StringBuilder(rawTask[SUBTASK_DURATION_POSITION]);
+            int index = subSb.indexOf(wordToRemove);
+            subSb.replace(index, wordToRemove.length(), "");
+            subSb.delete(0, 1);
+            if (isInteger(subSb.toString())) {
+                return Duration.ofMinutes(Integer.parseInt(subSb.toString()));
+            }
+        }
+
+        return null;
+    }
+
+    private LocalDateTime finishFromString(String type, String[] rawTask)
+            throws DateTimeParseException {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM HH:mm");
+        if (type.equals("TASK") || type.equals("EPIC")) {
+            return LocalDateTime.parse(rawTask[FINISH_POSITION],
+                    formatter);
+        } else if (type.equals("SUBTASK")) {
+            return LocalDateTime.parse(rawTask[SUBTASK_FINISH_POSITION],
+                    formatter);
+        } else {
+            return null;
+        }
+    }
+
+    private LocalDateTime startFromString(String type, String[] rawTask)
+            throws DateTimeParseException {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM HH:mm");
+        if (type.equals("TASK") || type.equals("EPIC")) {
+            return LocalDateTime.parse(rawTask[START_POSITION],
+                    formatter);
+        } else if (type.equals("SUBTASK")) {
+            return LocalDateTime.parse(rawTask[SUBTASK_START_POSITION],
+                    formatter);
+        } else {
+            return null;
+        }
+    }
+
+    private void makeTime(Task task, String type, String[] rawTask) {
+        if (startFromString(type, rawTask) != null) {
+            task.setStartTime(startFromString(type, rawTask));
+        }
+        if (durationFromString(type, rawTask) != null) {
+            task.setDuration(Objects.requireNonNull(durationFromString(type, rawTask)));
+        }
+        if (finishFromString(type, rawTask) != null) {
+            task.setFinishTime(finishFromString(type, rawTask));
+        }
+
+    }
+
+    private Task fromString(String value) {
+
+        String[] rawTask = value.split(",");
+        String unsureId = rawTask[ID_POSITION];
+        String type = rawTask[TYPE_POSITION];
+        String name = rawTask[NAME_POSITION];
+        String unsureStatus = rawTask[STATUS_POSITION];
+        String description = rawTask[DESCRIPTION_POSITION];
+
+        if (isInteger(unsureId) && isCorrectStatus(unsureStatus) && isCorrectType(type)) {
+            int id = Integer.parseInt(rawTask[ID_POSITION]);
+            TaskStatus status = statusConverter(unsureStatus);
+            switch (type) {
+                case ("TASK"):
+                    Task task = new Task(name, description, status);
+                    task.setId(id);
+                    makeTime(task, type, rawTask);
+                    return task;
+                case ("SUBTASK"):
+                    if (isInteger(rawTask[EPIC_ID_POSITION])) {
+                        int epicId = Integer.parseInt(rawTask[EPIC_ID_POSITION]);
+                        Subtask subtask = new Subtask(name, description, status, epicId);
+                        subtask.setId(id);
+                        makeTime(subtask, type, rawTask);
+                        return subtask;
+                    }
+
+                case ("EPIC"):
+                    Epic epic = new Epic(name, description, status);
+                    epic.setId(id);
+                    makeTime(epic, type, rawTask);
+                    return epic;
+            }
+
+        }
+        return null;
+    }
+
+    private TaskStatus statusConverter(String value) {
+
+        try {
+            return TaskStatus.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Невозможно определить статус задачи: " + value);
+            return null;
+        }
+    }
+
+    private boolean isCorrectStatus(String value) {
+        return (value.equals("NEW") || value.equals("DONE") || value.equals("IN_PROGRESS"));
+    }
+
+    private boolean isCorrectType(String value) {
+        return (value.equals("TASK") || value.equals("SUBTASK") || value.equals("EPIC"));
+    }
+
+    private boolean isInteger(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка форматирования");
+            return false;
+        }
+
+    }
+
+    @Override
+    public int addNewSubtask(Subtask subtask) throws ManagerSaveException {
+        super.addNewSubtask(subtask);
+        save();
+        return subtask.getId();
+    }
+
+    @Override
+    public int addNewTask(Task task) throws ManagerSaveException {
+        super.addNewTask(task);
+        save();
+        return task.getId();
+    }
+
+    @Override
+    public int addNewEpic(Epic epic) throws ManagerSaveException {
+        super.addNewEpic(epic);
+        save();
+        return epic.getId();
+    }
+
+    @Override
+    public void deleteTask(int id) {
+        super.deleteTask(id);
+        save();
+    }
+
+    @Override
+    public void deleteSubtask(int id) {
+        super.deleteSubtask(id);
+        save();
+    }
+
+    @Override
+    public void deleteEpic(int id) {
+        super.deleteEpic(id);
+        save();
+    }
+
+    @Override
+    public void updateTask(Task task) {
+        super.updateTask(task);
+        save();
+    }
+
+    @Override
+    public void updateSubtask(Subtask subtask) {
+        super.updateSubtask(subtask);
+        save();
+    }
+
+    @Override
+    public void updateEpic(Epic epic) {
+        super.updateEpic(epic);
+        save();
+    }
+
+    @Override
+    public void deleteTasks() {
+        super.deleteTasks();
+        save();
+    }
+
+    @Override
+    public void deleteEpics() {
+        super.deleteEpics();
+        save();
+    }
+
+    @Override
+    public void deleteSubtasks() {
+        super.deleteSubtasks();
+        save();
+    }
+}
