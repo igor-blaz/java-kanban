@@ -3,6 +3,7 @@ package com.yandex.tracker.service;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 
 public class BaseHttpHandler {
@@ -10,7 +11,7 @@ public class BaseHttpHandler {
     protected void sendText(HttpExchange h, String text) throws IOException {
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
         h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        h.sendResponseHeaders(200, resp.length);
+        h.sendResponseHeaders(HttpURLConnection.HTTP_OK, resp.length);
         h.getResponseBody().write(resp);
         h.close();
     }
@@ -19,7 +20,7 @@ public class BaseHttpHandler {
         String text = "OK";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
         h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        h.sendResponseHeaders(201, resp.length);
+        h.sendResponseHeaders(HttpURLConnection.HTTP_CREATED, resp.length);
         h.getResponseBody().write(resp);
         h.close();
     }
@@ -28,7 +29,7 @@ public class BaseHttpHandler {
         String text = "Not Found";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
         h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        h.sendResponseHeaders(404, resp.length);
+        h.sendResponseHeaders(HttpURLConnection.HTTP_NOT_FOUND, resp.length);
         h.getResponseBody().write(resp);
         h.close();
     }
@@ -37,7 +38,7 @@ public class BaseHttpHandler {
         String text = "Not Acceptable";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
         h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        h.sendResponseHeaders(406, resp.length);
+        h.sendResponseHeaders(HttpURLConnection.HTTP_NOT_ACCEPTABLE, resp.length);
         h.getResponseBody().write(resp);
         h.close();
     }
@@ -46,7 +47,7 @@ public class BaseHttpHandler {
         String text = "Internal Server Error";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
         h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        h.sendResponseHeaders(500, resp.length);
+        h.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, resp.length);
         h.getResponseBody().write(resp);
         h.close();
     }
@@ -55,7 +56,7 @@ public class BaseHttpHandler {
         String text = "Bad Request";
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
         h.getResponseHeaders().add("Content-Type", "application/json;charset=utf-8");
-        h.sendResponseHeaders(400, resp.length);
+        h.sendResponseHeaders(HttpURLConnection.HTTP_BAD_REQUEST, resp.length);
         h.getResponseBody().write(resp);
         h.close();
     }
